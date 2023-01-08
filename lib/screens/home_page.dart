@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_green_extended/api_key.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 
@@ -16,6 +18,7 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   final _mapController = MapController();
   LatLng? _currentPostion;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -75,23 +78,31 @@ class _HomePageState extends ConsumerState<HomePage> {
           Positioned(
               left: 12,
               right: 12,
-              bottom: 10,
+              bottom: 15,
               child: ElevatedButton(
-                onPressed: (() {}),
+                onPressed: (() async {
+                  final XFile? images =
+                      await _picker.pickImage(source: ImageSource.camera);
+
+                  if (!mounted) return;
+                  context.push("/upload_spot", extra: images);
+                }),
                 style: ElevatedButton.styleFrom(
                   elevation: 2,
                   textStyle: const TextStyle(color: Colors.white),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(Icons.camera_alt),
                     SizedBox(
                       width: 10,
                     ),
                     Text(
                       "Capture Dump",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -112,7 +123,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (!serviceEnabled) {
       serviceEnabled = await location.requestService();
       if (!serviceEnabled) {
-        SnackBar(content: Text("Please give location permission"));
+        const SnackBar(content: Text("Please give location permission"));
       }
     }
 
@@ -120,7 +131,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (permissionGranted == PermissionStatus.denied) {
       permissionGranted = await location.requestPermission();
       if (permissionGranted != PermissionStatus.granted) {
-        SnackBar(content: Text("Please give location permission"));
+        const SnackBar(content: Text("Please give location permission"));
       }
     }
 
